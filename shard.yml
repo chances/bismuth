@@ -1,0 +1,19 @@
+name: bismuth
+version: 0.1.0
+license: MIT
+authors:
+  - Chance Snow <git@chancesnow.me>
+
+description: |
+  A generic, bring your own framework/engine graphics library for games and visualizations.
+
+dependencies:
+  glfw:
+    github: chances/glfw.cr
+    branch: bismuth
+  wgpu-crystal:
+    github: chances/wgpu-crystal
+
+# development_dependencies:
+#   webmock:
+#     github: manastech/webmock.cr

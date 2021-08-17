@@ -1,0 +1,10 @@
+./doc/
+./lib/
+./bin/
+./.shards/
+
+# Libraries ought not lock dependencies
+./shard.lock
+
+# macOS Caches
+.DS_Store
