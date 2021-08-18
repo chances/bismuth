@@ -1,10 +1,13 @@
-./doc/
-./lib/
-./bin/
-./.shards/
+doc/
+lib/
+bin/
+.shards/
 
 # Libraries ought not lock dependencies
-./shard.lock
+shard.lock
+
+# Environment config
+.envrc
 
 # macOS Caches
 .DS_Store
