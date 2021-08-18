@@ -11,7 +11,7 @@ dependencies:
   glfw:
     github: chances/glfw.cr
     branch: bismuth
-  wgpu-crystal:
+  wgpu:
     github: chances/wgpu-crystal
 
 # development_dependencies:
