@@ -13,6 +13,7 @@ dependencies:
     branch: bismuth
   wgpu:
     github: chances/wgpu-crystal
+    branch: bismuth
 
 # development_dependencies:
 #   webmock:
