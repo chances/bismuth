@@ -8,19 +8,17 @@ require "./window.cr"
 abstract class App < RenderLoop::Engine
   # Whether this application is in debug mode.
   @debug = true
-  @frame_time : Float64
   @active = false
   @windows = Array(Window).new
   # Graphics resources
   @adapter : WGPU::Adapter
   getter device : WGPU::Device
 
-  def initialize(name : String, width : UInt16 = 800, height : UInt16 = 600, fullscreen = false, desired_frame_rate = 60_f64)
+  def initialize(name : String, width : UInt16 = 800, height : UInt16 = 600, fullscreen = false, @desired_fps = 60_u32)
     @name = name
     {% if flag?(:release) %}
     @debug = false
     {% end %}
-    @frame_time = 1.0f64 / desired_frame_rate
 
     at_exit { puts "#{@name} app exited" }
 
@@ -42,6 +40,14 @@ abstract class App < RenderLoop::Engine
       @debug ? Path[Dir.current].join("#{@name.split(" ").join("-")}_gpu_trace").to_s : nil
     ).get
     abort("Failed to initialize graphics device") unless @device.is_valid?
+  end
+
+  def desired_fps
+    @desired_fps
+  end
+
+  def desired_fps(fps : UInt32)
+    @desired_fps = fps
   end
 
   # Called when the main loop is starting up.
@@ -67,16 +73,17 @@ abstract class App < RenderLoop::Engine
       passed_time = start_time - last_time # How long the previous frame took
       last_time = start_time
       unprocessed_time += passed_time
+      frame_time = 1.0f64 / @desired_fps
 
-      while unprocessed_time > @frame_time
+      while unprocessed_time > frame_time
         should_render = true
-        unprocessed_time -= @frame_time
+        unprocessed_time -= frame_time
 
         Glfw.poll_events
         @active = false if @main_window.should_close?
         break unless @active
 
-        tick = RenderLoop::Tick.new(@frame_time, passed_time, startup_time)
+        tick = RenderLoop::Tick.new(frame_time, passed_time, startup_time)
         self.tick tick, @main_window.input
       end
 
