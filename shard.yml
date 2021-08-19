@@ -11,6 +11,9 @@ dependencies:
   glfw:
     github: chances/glfw.cr
     branch: bismuth
+  render_loop:
+    github: da1nerd/render_loop
+    branch: master
   wgpu:
     github: chances/wgpu-crystal
     branch: bismuth
