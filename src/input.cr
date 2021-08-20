@@ -159,11 +159,11 @@ end
 
 enum Modifiers
   # If this bit is set, one or more shift keys were held down.
-  MOD_SHIFT   = 0x0001
+  SHIFT   = 0x0001
   # If this bit is set, one or more control keys were held down.
-  MOD_CONTROL = 0x0002
+  CONTROL = 0x0002
   # If this bit is set, one or more alt keys were held down.
-  MOD_ALT     = 0x0004
+  ALT     = 0x0004
   # If this bit is set, one or more super keys were held down.
-  MOD_SUPER   = 0x0008
+  SUPER   = 0x0008
 end
