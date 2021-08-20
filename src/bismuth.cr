@@ -4,6 +4,8 @@ require "wgpu"
 
 require "./window.cr"
 
+alias Tick = RenderLoop::Tick
+
 # A Bismuth application.
 abstract class App < RenderLoop::Engine
   # Whether this application is in debug mode.
@@ -50,20 +52,16 @@ abstract class App < RenderLoop::Engine
     @desired_fps = fps
   end
 
-  # Called when the main loop is starting up.
-  # Use this to set things up.
-  protected def startup
-  end
-
   def run
-    startup_time = Time.monotonic.total_milliseconds # When the loop started
-
-    @main_window.show
-    puts "Main window shown"
-
+    @active = true
     self.startup
 
-    @active = true
+    unless @main_window.visible?
+      @main_window.show
+      puts "Main window shown"
+    end
+
+    startup_time = Time.monotonic.total_milliseconds # When the loop started
     last_time = Time.monotonic.total_milliseconds
     unprocessed_time = 0_f64
 
@@ -83,7 +81,7 @@ abstract class App < RenderLoop::Engine
         @active = false if @main_window.should_close?
         break unless @active
 
-        tick = RenderLoop::Tick.new(frame_time, passed_time, startup_time)
+        tick = Tick.new(frame_time, passed_time, startup_time)
         self.tick tick, @main_window.input
       end
 
@@ -107,21 +105,21 @@ abstract class App < RenderLoop::Engine
     puts "Main window destroyed"
   end
 
-  # Called at each iteration of the main loop.
-  # This is when application state should be updated.
-  private def tick(tick : RenderLoop::Tick, input : RenderLoop::Input)
+  # Called when the main loop is starting up.
+  # Use this to set things up.
+  abstract def startup
+
+  private def tick(tick : Tick, input : RenderLoop::Input)
     self.tick tick
   end
 
   # Called at each iteration of the main loop.
   # This is when application state should be updated.
-  protected def tick(tick : RenderLoop::Tick)
-  end
+  abstract def tick(tick : Tick)
 
   # Called at intervals desigated by the configured frame rate.
   # This is used to render the scene.
-  protected def render
-  end
+  abstract def render
 
   # Called to perform cleanup operations after the sceen has been rendered.
   protected def flush

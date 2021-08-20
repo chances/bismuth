@@ -21,6 +21,7 @@ end
     fun get_cocoa_window = glfwGetCocoaWindow(Glfw::Window*) : Void*;
   end
 
+  @[Link("objc")]
   @[Link(framework: "Cocoa")]
   @[Link(framework: "QuartzCore")]
   lib LibPlatform

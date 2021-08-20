@@ -1,8 +1,25 @@
+require "future"
 require "glfw"
 require "render_loop"
+require "wgpu"
 
 require "./input.cr"
 require "./platform.cr"
+
+class SwapChainDescriptor < WGPU::SwapChainDescriptor
+  def self.from_window(window : Window, format : WGPU::TextureFormat, present_mode = WGPU::PresentMode::Fifo)
+    raise ArgumentError.new "Window surface is not valid" unless window.surface.not_nil!.is_valid?
+
+    self.new(LibWGPU::SwapChainDescriptor.new(
+      label: window.title,
+      usage: WGPU::TextureUsage::RenderAttachment,
+      format: format,
+      width: window.width,
+      height: window.height,
+      present_mode: present_mode,
+    ))
+  end
+end
 
 alias Input = RenderLoop::Input(Key, MouseButton)
 
@@ -26,7 +43,7 @@ class Window < RenderLoop::Window(Key, MouseButton)
 
   def startup
     @surface = Platform.create_surface @title, @handle
-    abort("Failed to create graphics surface", 1) unless @surface.as(WGPU::Surface).is_valid?
+    abort("Failed to create graphics surface", 1) unless @surface.not_nil!.is_valid?
     puts "Created native graphics surface"
   end
 
@@ -45,6 +62,12 @@ class Window < RenderLoop::Window(Key, MouseButton)
 
   def visible?
     @visible
+  end
+
+  def swap_chain_descriptor(adapter : WGPU::Adapter)
+    surface = @surface.not_nil!
+    abort("Window surface is not valid", 1) unless surface.is_valid?
+    future { SwapChainDescriptor.from_window self, surface.preferred_format(adapter).get }
   end
 
   def should_close? : Bool

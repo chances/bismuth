@@ -4,7 +4,10 @@ ifeq (${OS},Darwin)
 	SOURCES += $(shell pwd)/src/platform/mac.c
 endif
 
-bin/triangle: ${SOURCES}
+shard.lock: shard.yml
+	shards install
+
+bin/triangle: shard.lock ${SOURCES} examples/triangle.cr
 	@mkdir -p bin
 ifeq (${OS},Darwin)
 	crystal build examples/triangle.cr -o bin/triangle --link-flags $(shell pwd)/src/platform/mac.c

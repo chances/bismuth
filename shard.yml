@@ -8,6 +8,9 @@ description: |
   A generic, bring your own framework/engine graphics library for games and visualizations.
 
 dependencies:
+  future:
+      github: crystal-community/future.cr
+      version: ~> 1.0.0
   glfw:
     github: chances/glfw.cr
     branch: bismuth
