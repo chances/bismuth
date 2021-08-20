@@ -1,19 +1,25 @@
 OS := $(shell uname -s)
 SOURCES := $(shell find src -name "*.cr")
+CFLAGS :=
 ifeq (${OS},Darwin)
 	SOURCES += $(shell pwd)/src/platform/mac.c
+	CFLAGS += --link-flags $(shell pwd)/src/platform/mac.c
 endif
+ifeq (${MODE},Release)
+	SOURCES += clean
+	CFLAGS += --release
+endif
+
+clean:
+	rm -r bin
+.PHONY: clean
 
 shard.lock: shard.yml
 	shards install
 
 bin/triangle: shard.lock ${SOURCES} examples/triangle.cr
 	@mkdir -p bin
-ifeq (${OS},Darwin)
-	crystal build examples/triangle.cr -o bin/triangle --link-flags $(shell pwd)/src/platform/mac.c
-else
-	crystal build examples/triangle.cr -o bin/triangle
-endif
+	crystal build examples/triangle.cr -o bin/triangle ${CFLAGS}
 
 bin/triangle.app: bin/triangle
 ifeq (${OS},Darwin)
