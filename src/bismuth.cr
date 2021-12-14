@@ -117,11 +117,11 @@ abstract class App < RenderLoop::Engine
   # This is when application state should be updated.
   abstract def tick(tick : Tick)
 
-  # Called at intervals desigated by the configured frame rate.
+  # Called at intervals designated by the configured frame rate.
   # This is used to render the scene.
   abstract def render
 
-  # Called to perform cleanup operations after the sceen has been rendered.
+  # Called to perform cleanup operations after the screen has been rendered.
   protected def flush
   end
 
