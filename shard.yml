@@ -12,8 +12,8 @@ dependencies:
       github: crystal-community/future.cr
       version: ~> 1.0.0
   glfw:
-    github: chances/glfw.cr
-    branch: bismuth
+    github: malte-v/glfw.cr
+    branch: master
   render_loop:
     github: da1nerd/render_loop
     branch: master
