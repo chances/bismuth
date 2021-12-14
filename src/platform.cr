@@ -8,7 +8,7 @@ module Platform
       return WGPU::Surface.from_metal_layer("#{name} Metal Layer", metal_layer)
     {% end %}
     {% if flag?(:linux) %}
-      return WGPU::Surface.from_xlib("#{name} X11 Window", get_x11_display, get_x11_window(window))
+      return WGPU::Surface.from_xlib("#{name} X11 Window", Glfw.get_x11_display, Glfw.get_x11_window(window))
     {% else %}
       abort("Unsupported platform!", 1)
     {% end %}
