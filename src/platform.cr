@@ -10,7 +10,7 @@ module Platform
     {% if flag?(:linux) %}
       return WGPU::Surface.from_xlib("#{name} X11 Window", get_x11_display, get_x11_window(window))
     {% else %}
-      raise "Unsupported platform!"
+      abort("Unsupported platform!", 1)
     {% end %}
   end
 end
