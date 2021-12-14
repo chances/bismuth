@@ -85,8 +85,8 @@ abstract class App < RenderLoop::Engine
         self.tick tick, @main_window.input
       end
 
-      # Sleep for 1 millisecond
-      sleep(Time::Span.new(nanoseconds: 1000000)) unless should_render
+      # Sleep for 0.5 milliseconds
+      sleep(Time::Span.new(nanoseconds: 500000)) unless should_render
 
       if should_render
         self.render
