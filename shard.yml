@@ -21,6 +21,7 @@ dependencies:
     github: chances/wgpu-crystal
     branch: bismuth
 
-# development_dependencies:
-#   webmock:
-#     github: manastech/webmock.cr
+development_dependencies:
+  baked_file_system:
+    github: schovi/baked_file_system
+    version: 0.10.0
