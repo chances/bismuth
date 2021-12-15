@@ -5,9 +5,11 @@ CFLAGS :=
 ifeq (${MODE},Release)
 	SOURCES += clean
 	CFLAGS += --release
-endif
+else
+	CFLAGS += --debug
 ifeq (${MODE},Debug)
 	CFLAGS += --verbose
+endif
 endif
 
 ifeq (${OS},Darwin)
