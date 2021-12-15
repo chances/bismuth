@@ -30,9 +30,6 @@ abstract class App < RenderLoop::Engine
     abort("Could not initialize GLFW", 1) unless Glfw.init
 
     @main_window = Window.new @name
-    puts "Created main window"
-    @main_window.startup
-    @windows.push @main_window
 
     @adapter = WGPU::Adapter.request(@main_window.surface).get
     abort("Failed to initialize graphics adapter") unless @adapter.is_ready?
@@ -42,6 +39,10 @@ abstract class App < RenderLoop::Engine
       @debug ? Path[Dir.current].join("#{@name.split(" ").join("-")}_gpu_trace").to_s : nil
     ).get
     abort("Failed to initialize graphics device") unless @device.is_valid?
+
+    @main_window.startup(@adapter, @device)
+    puts "Created #{@name} main window"
+    @windows.push @main_window
   end
 
   def desired_fps
@@ -58,43 +59,43 @@ abstract class App < RenderLoop::Engine
 
     unless @main_window.visible?
       @main_window.show
-      puts "Main window shown"
+      puts "#{@name} main window shown"
     end
 
-    startup_time = Time.monotonic.total_milliseconds # When the loop started
-    last_time = Time.monotonic.total_milliseconds
-    unprocessed_time = 0_f64
+    startup_time = Time.monotonic.total_milliseconds
+    frame_time = Time::Span::ZERO
 
     while @active
-      should_render = false
-      start_time = Time.monotonic.total_milliseconds
-      passed_time = start_time - last_time # How long the previous frame took
-      last_time = start_time
-      unprocessed_time += passed_time
-      frame_time = 1.0f64 / @desired_fps
+      desired_frame_time = 1.0_f64 / @desired_fps
 
-      while unprocessed_time > frame_time
-        should_render = true
-        unprocessed_time -= frame_time
-
+      # How long the previous frame took
+      elapsed_time = Time.measure do
         Glfw.poll_events
         @active = false if @main_window.should_close?
-        break unless @active
 
-        tick = Tick.new(frame_time, passed_time, startup_time)
+        @windows.each { |window| window.update }
+
+        tick = Tick.new(desired_frame_time, frame_time.total_seconds, startup_time)
         self.tick tick, @main_window.input
-      end
-
-      # Sleep for 0.5 milliseconds
-      sleep(Time::Span.new(nanoseconds: 500000)) unless should_render
-
-      if should_render
-        self.render
-        self.flush
 
         @windows.each do |window|
           window.render
-          window.title= "#{@name} - Frame time: #{sprintf "%1.2d", passed_time}ms" if @debug
+          self.render(window)
+          window.title= "#{@name} - Frame time: #{sprintf "%1.2d", frame_time.total_milliseconds}ms" if @debug
+        end
+
+        self.flush
+      end
+
+      break unless @active
+      frame_time = elapsed_time.not_nil!
+
+      # Don't thrash the CPU if rendering faster than desired FPS
+      while frame_time.total_seconds < desired_frame_time
+        wait_time = desired_frame_time * 1000 - frame_time.total_milliseconds
+        frame_time += Time.measure do
+          # Sleep for 0.5 milliseconds
+          sleep Time::Span.new(nanoseconds: 1000000 * wait_time.to_i32)
         end
       end
     end
@@ -118,11 +119,14 @@ abstract class App < RenderLoop::Engine
   abstract def tick(tick : Tick)
 
   # Called at intervals designated by the configured frame rate.
-  # This is used to render the scene.
-  abstract def render
+  # This is used to render the scene for each of the app's windows.
+  abstract def render(window : Window)
 
   # Called to perform cleanup operations after the screen has been rendered.
-  protected def flush
+  private def flush
+    @windows.each do |window|
+      window.swap_chain.not_nil!.present
+    end
   end
 
   # Called when the application is shutting down.

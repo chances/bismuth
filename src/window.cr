@@ -30,30 +30,42 @@ class Window < RenderLoop::Window(Key, MouseButton)
   getter height : UInt16
   # Graphics resources
   getter surface : WGPU::Surface?
+  getter swap_chain : WGPU::SwapChain?
 
   def initialize(@title : String, @width : UInt16 = 800, @height : UInt16 = 600, @fullscreen = false, @cursor_visible = false)
     @input = Input.new self
     @primary_monitor = Glfw.get_primary_monitor
+    @old_size = {width: @width, height: @height}
+  end
 
+  def startup
     Glfw.window_hint(Glfw::VISIBLE, @visible = false)
     Glfw.window_hint(Glfw::CLIENT_API, Glfw::NO_API) # Graphics are handled by wgpu
     @handle = Glfw.create_window(@width, height, @title, @fullscreen ? Glfw.get_primary_monitor : Pointer(Void).null, nil)
     abort("Failed to initialize a new GLFW Window", 1) if @handle.null?
-  end
 
-  def startup
     @surface = Platform.create_surface @title, @handle
     abort("Failed to create graphics surface", 1) unless @surface.not_nil!.is_valid?
-    puts "Created native graphics surface"
+    puts "Created native graphics surface for #{@title} window"
+  end
+
+  def startup(adapter : WGPU::Adapter, device : WGPU::Device)
+    self.startup
+
+    @device = device
+    @surface.not_nil!.preferred_format(adapter)
+    self.update
   end
 
   def size : RenderLoop::Size
     Glfw.get_window_size @handle, out width, out height
-    {@width = width, @height = height}
+    @width = UInt16.new(width)
+    @height = UInt16.new(height)
+    {width: Int32.new(@width), height: Int32.new(@height)}
   end
 
   def size(s : RenderLoop::Size)
-    Glfw.set_window_size @handle, @width = s[0], @height = s[1]
+    Glfw.set_window_size @handle, @width = s[:width], @height = s[:height]
   end
 
   def fullscreen?
@@ -64,14 +76,21 @@ class Window < RenderLoop::Window(Key, MouseButton)
     @visible
   end
 
-  def swap_chain_descriptor(adapter : WGPU::Adapter)
-    surface = @surface.not_nil!
-    abort("Window surface is not valid", 1) unless surface.is_valid?
-    future { SwapChainDescriptor.from_window self, surface.preferred_format(adapter).get }
-  end
-
   def should_close? : Bool
     Glfw.window_should_close(@handle) == Glfw::TRUE
+  end
+
+  def update
+    # Recreate this window's swap chain if the window is new or its size has changed
+    if @swap_chain.nil? || @old_size != self.size
+      @old_size = {width: @width, height: @height}
+      surface = @surface.not_nil!
+      abort("Window surface is not valid", 1) unless surface.is_valid?
+
+      future_swap_chain_desc = future { SwapChainDescriptor.from_window self, surface.preferred_format.not_nil!.get }
+      # TODO: Destroy swap chain if it is not nil
+      @swap_chain = @device.not_nil!.create_swap_chain @surface.not_nil!, future_swap_chain_desc.get
+    end
   end
 
   def render
@@ -86,8 +105,7 @@ class Window < RenderLoop::Window(Key, MouseButton)
   end
 
   def input
-    raise "Window input is nil" if @input.nil?
-    @input.as(Input)
+    @input.not_nil!.as(Input)
   end
 
   def key_pressed?(k : Key) : Bool

@@ -12,14 +12,11 @@ class Assets
 end
 
 class Triangle < App
-  @swap_chain : WGPU::SwapChain
   @pipeline : WGPU::RenderPipeline?
   @command_buffer : WGPU::CommandBuffer?
 
   def initialize
     super("Triangle")
-
-    @swap_chain = @device.create_swap_chain @main_window.surface.not_nil!, @main_window.swap_chain_descriptor(@adapter).get
   end
 
   # TODO: Render a triangle
@@ -50,7 +47,7 @@ class Triangle < App
         entry_point: "fs_main",
         targets: [
           LibWGPU::ColorTargetState.new(
-            format: @swap_chain.format,
+            format: @main_window.swap_chain.not_nil!.format,
             blend: WGPU::BlendState.new(
               color: WGPU::BlendComponent::SRC_ONE_DST_ZERO_ADD,
               alpha: WGPU::BlendComponent::SRC_ONE_DST_ZERO_ADD
@@ -66,8 +63,8 @@ class Triangle < App
   protected def tick(tick : Tick)
   end
 
-  protected def render
-    next_texture = @swap_chain.current_texture_view
+  protected def render(window : Window)
+    next_texture = window.swap_chain.not_nil!.current_texture_view
     raise "Could not acquire next swap chain texture" unless next_texture.is_valid?
 
     encoder = @device.create_command_encoder(LibWGPU::CommandEncoderDescriptor.new)
@@ -91,10 +88,6 @@ class Triangle < App
     @command_buffer = encoder.finish
     raise "Could not finish recording command buffer" unless @command_buffer.not_nil!.is_valid?
     @device.queue.submit @command_buffer.not_nil!
-  end
-
-  protected def flush
-    @swap_chain.present
   end
 end
 

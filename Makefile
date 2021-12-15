@@ -1,13 +1,27 @@
 OS := $(shell uname -s)
 SOURCES := $(shell find src -name "*.cr")
 CFLAGS :=
+
+ifeq (${MODE},Release)
+	SOURCES += clean
+	CFLAGS += --release
+else
+	CFLAGS += --debug
+ifeq (${MODE},Debug)
+	CFLAGS += --verbose
+endif
+endif
+
 ifeq (${OS},Darwin)
 	SOURCES += $(shell pwd)/src/platform/mac.c
 	CFLAGS += --link-flags $(shell pwd)/src/platform/mac.c
 endif
+ifeq (${OS},Linux)
+	ARCH := $(shell uname -m)
+	LIB_ARCH := $(shell gcc -dumpmachine)
 ifeq (${MODE},Release)
-	SOURCES += clean
-	CFLAGS += --release
+	CFLAGS += --link-flags '-Xlinker -rpath=\"/usr/lib/${LIB_ARCH}\"'
+endif
 endif
 
 clean:
