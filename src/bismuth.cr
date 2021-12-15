@@ -30,9 +30,6 @@ abstract class App < RenderLoop::Engine
     abort("Could not initialize GLFW", 1) unless Glfw.init
 
     @main_window = Window.new @name
-    puts "Created main window"
-    @main_window.startup
-    @windows.push @main_window
 
     @adapter = WGPU::Adapter.request(@main_window.surface).get
     abort("Failed to initialize graphics adapter") unless @adapter.is_ready?
@@ -42,6 +39,10 @@ abstract class App < RenderLoop::Engine
       @debug ? Path[Dir.current].join("#{@name.split(" ").join("-")}_gpu_trace").to_s : nil
     ).get
     abort("Failed to initialize graphics device") unless @device.is_valid?
+
+    @main_window.startup(@adapter, @device)
+    puts "Created #{@name} main window"
+    @windows.push @main_window
   end
 
   def desired_fps
@@ -58,7 +59,7 @@ abstract class App < RenderLoop::Engine
 
     unless @main_window.visible?
       @main_window.show
-      puts "Main window shown"
+      puts "#{@name} main window shown"
     end
 
     startup_time = Time.monotonic.total_milliseconds # When the loop started
@@ -80,22 +81,24 @@ abstract class App < RenderLoop::Engine
         Glfw.poll_events
         @active = false if @main_window.should_close?
         break unless @active
-
-        tick = Tick.new(frame_time, passed_time, startup_time)
-        self.tick tick, @main_window.input
       end
 
       # Sleep for 0.5 milliseconds
       sleep(Time::Span.new(nanoseconds: 500000)) unless should_render
 
       if should_render
-        self.render
-        self.flush
+        @windows.each { |window| window.update }
+
+        tick = Tick.new(frame_time, passed_time, startup_time)
+        self.tick tick, @main_window.input
 
         @windows.each do |window|
           window.render
+          self.render(window)
           window.title= "#{@name} - Frame time: #{sprintf "%1.2d", passed_time}ms" if @debug
         end
+
+        self.flush
       end
     end
 
@@ -118,11 +121,14 @@ abstract class App < RenderLoop::Engine
   abstract def tick(tick : Tick)
 
   # Called at intervals designated by the configured frame rate.
-  # This is used to render the scene.
-  abstract def render
+  # This is used to render the scene for each of the app's windows.
+  abstract def render(window : Window)
 
   # Called to perform cleanup operations after the screen has been rendered.
-  protected def flush
+  private def flush
+    @windows.each do |window|
+      window.swap_chain.not_nil!.present
+    end
   end
 
   # Called when the application is shutting down.
