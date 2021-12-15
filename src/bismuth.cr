@@ -62,43 +62,41 @@ abstract class App < RenderLoop::Engine
       puts "#{@name} main window shown"
     end
 
-    startup_time = Time.monotonic.total_milliseconds # When the loop started
-    last_time = Time.monotonic.total_milliseconds
-    unprocessed_time = 0_f64
+    startup_time = Time.monotonic.total_milliseconds
+    frame_time = Time::Span::ZERO
 
     while @active
-      should_render = false
-      start_time = Time.monotonic.total_milliseconds
-      passed_time = start_time - last_time # How long the previous frame took
-      last_time = start_time
-      unprocessed_time += passed_time
-      frame_time = 1.0f64 / @desired_fps
+      desired_frame_time = 1.0_f64 / @desired_fps
 
-      while unprocessed_time > frame_time
-        should_render = true
-        unprocessed_time -= frame_time
-
+      # How long the previous frame took
+      elapsed_time = Time.measure do
         Glfw.poll_events
         @active = false if @main_window.should_close?
-        break unless @active
-      end
 
-      # Sleep for 0.5 milliseconds
-      sleep(Time::Span.new(nanoseconds: 500000)) unless should_render
-
-      if should_render
         @windows.each { |window| window.update }
 
-        tick = Tick.new(frame_time, passed_time, startup_time)
+        tick = Tick.new(desired_frame_time, frame_time.total_seconds, startup_time)
         self.tick tick, @main_window.input
 
         @windows.each do |window|
           window.render
           self.render(window)
-          window.title= "#{@name} - Frame time: #{sprintf "%1.2d", passed_time}ms" if @debug
+          window.title= "#{@name} - Frame time: #{sprintf "%1.2d", frame_time.total_milliseconds}ms" if @debug
         end
 
         self.flush
+      end
+
+      break unless @active
+      frame_time = elapsed_time.not_nil!
+
+      # Don't thrash the CPU if rendering faster than desired FPS
+      while frame_time.total_seconds < desired_frame_time
+        wait_time = desired_frame_time * 1000 - frame_time.total_milliseconds
+        frame_time += Time.measure do
+          # Sleep for 0.5 milliseconds
+          sleep Time::Span.new(nanoseconds: 1000000 * wait_time.to_i32)
+        end
       end
     end
 
