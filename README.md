@@ -4,6 +4,8 @@ A generic, bring your own framework/engine graphics library for games and visual
 
 ## Usage
 
+See the [API documentation](https://chances.github.io/bismuth).
+
 ### Linux
 
 #### Ubuntu
