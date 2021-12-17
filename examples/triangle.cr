@@ -31,13 +31,13 @@ class Triangle < App
       label: pipeline_label,
       layout: pipeline_layout,
       vertex: WGPU::VertexState.from(@shader.not_nil!, entry_point: "vs_main"),
-      primitive: LibWGPU::PrimitiveState.new(
-        topology: LibWGPU::PrimitiveTopology::TriangleList,
-        strip_index_format: LibWGPU::IndexFormat::Undefined,
-        front_face: LibWGPU::FrontFace::CCW,
-        cull_mode: LibWGPU::CullMode::None
+      primitive: WGPU::PrimitiveState.new(
+        topology: WGPU::PrimitiveTopology::TriangleList,
+        strip_index_format: WGPU::IndexFormat::Undefined,
+        front_face: WGPU::FrontFace::CCW,
+        cull_mode: WGPU::CullMode::None
       ),
-      multisample: LibWGPU::MultisampleState.new(
+      multisample: WGPU::MultisampleState.new(
         count: 1,
         mask: ~0,
         alpha_to_coverage_enabled: false,
@@ -46,13 +46,13 @@ class Triangle < App
         @shader.not_nil!,
         entry_point: "fs_main",
         targets: [
-          LibWGPU::ColorTargetState.new(
+          WGPU::ColorTargetState.new(
             format: @main_window.swap_chain.not_nil!.format,
             blend: WGPU::BlendState.new(
               color: WGPU::BlendComponent::SRC_ONE_DST_ZERO_ADD,
               alpha: WGPU::BlendComponent::SRC_ONE_DST_ZERO_ADD
             ),
-            write_mask: LibWGPU::ColorWriteMask::All
+            write_mask: WGPU::ColorWriteMask::All
           ),
         ],
       ),
@@ -67,15 +67,15 @@ class Triangle < App
     next_texture = window.swap_chain.not_nil!.current_texture_view
     raise "Could not acquire next swap chain texture" unless next_texture.is_valid?
 
-    encoder = @device.create_command_encoder(LibWGPU::CommandEncoderDescriptor.new)
-    color_attachment = LibWGPU::RenderPassColorAttachmentDescriptor.new(
+    encoder = @device.create_command_encoder(WGPU::CommandEncoderDescriptor.new)
+    color_attachment = WGPU::RenderPassColorAttachmentDescriptor.new(
       attachment: next_texture,
-      resolve_target: LibWGPU::TextureView.null,
-      load_op: LibWGPU::LoadOp::Clear,
-      store_op: LibWGPU::StoreOp::Store,
+      resolve_target: WGPU::TextureView.null,
+      load_op: WGPU::LoadOp::Clear,
+      store_op: WGPU::StoreOp::Store,
       clear_color: WGPU::Colors::GREEN
     )
-    render_pass = encoder.begin_render_pass(LibWGPU::RenderPassDescriptor.new(
+    render_pass = encoder.begin_render_pass(WGPU::RenderPassDescriptor.new(
       color_attachments: pointerof(color_attachment),
       color_attachment_count: 1,
       depth_stencil_attachment: nil

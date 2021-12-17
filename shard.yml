@@ -9,8 +9,8 @@ description: |
 
 dependencies:
   future:
-      github: crystal-community/future.cr
-      version: ~> 1.0.0
+    github: crystal-community/future.cr
+    version: ~> 1.0.0
   glfw:
     github: malte-v/glfw.cr
     branch: master
@@ -19,7 +19,7 @@ dependencies:
     branch: master
   wgpu:
     github: chances/wgpu-crystal
-    branch: bismuth
+    version: ~> 0.9.2
 
 # development_dependencies:
 #   webmock:
