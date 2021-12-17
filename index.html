@@ -108,35 +108,73 @@
   </svg>
 </a>Bismuth</h1>
 <p>A generic, bring your own framework/engine graphics library for games and visualizations.</p>
+<h2><a id="installation" class="anchor" href="#installation">
+  <svg class="octicon-link" aria-hidden="true">
+    <use href="#octicon-link"/>
+  </svg>
+</a>Installation</h2>
+<ol>
+<li>
+<p>Add the dependency to your <code>shard.yml</code>:</p>
+<pre><code class="language-yaml">dependencies:
+  bismuth:
+   github: chances/bismuth</code></pre>
+</li>
+<li>
+<p>Run <code>shards install</code></p>
+</li>
+</ol>
 <h2><a id="usage" class="anchor" href="#usage">
   <svg class="octicon-link" aria-hidden="true">
     <use href="#octicon-link"/>
   </svg>
 </a>Usage</h2>
+<pre><code class="language-crystal"><span class="k">require</span> <span class="s">&quot;bismuth&quot;</span>
+
+<span class="c"># TODO: Write usage instructions here</span></code></pre>
 <p>See the <a href="https://chances.github.io/bismuth">API documentation</a>.</p>
-<h3><a id="linux" class="anchor" href="#linux">
+<h3><a id="debian-linux" class="anchor" href="#debian-linux">
   <svg class="octicon-link" aria-hidden="true">
     <use href="#octicon-link"/>
   </svg>
-</a>Linux</h3>
-<h4><a id="ubuntu" class="anchor" href="#ubuntu">
-  <svg class="octicon-link" aria-hidden="true">
-    <use href="#octicon-link"/>
-  </svg>
-</a>Ubuntu</h4>
+</a>Debian Linux</h3>
 <p>Required libraries:</p>
 <ul>
 <li><a href="https://github.com/KhronosGroup/Vulkan-Loader"><code>libvulkan-dev</code></a></li>
 <li><code>mesa-vulkan-drivers</code></li>
 </ul>
-<h5><a id="for-n-vidia-gp-us" class="anchor" href="#for-n-vidia-gp-us">
+<h4><a id="for-n-vidia-gp-us" class="anchor" href="#for-n-vidia-gp-us">
   <svg class="octicon-link" aria-hidden="true">
     <use href="#octicon-link"/>
   </svg>
-</a>For NVidia GPUs</h5>
+</a>For NVidia GPUs</h4>
 <ul>
 <li><code>nvidia-driver-470</code></li>
 </ul>
+<h3><a id="running-examples" class="anchor" href="#running-examples">
+  <svg class="octicon-link" aria-hidden="true">
+    <use href="#octicon-link"/>
+  </svg>
+</a>Running Examples</h3>
+<h4><a id="triangle" class="anchor" href="#triangle">
+  <svg class="octicon-link" aria-hidden="true">
+    <use href="#octicon-link"/>
+  </svg>
+</a>Triangle</h4>
+<h5><a id="mac-os" class="anchor" href="#mac-os">
+  <svg class="octicon-link" aria-hidden="true">
+    <use href="#octicon-link"/>
+  </svg>
+</a>macOS</h5>
+<pre><code class="language-shell">make bin/triangle.app
+open bin/triangle.app</code></pre>
+<h5><a id="linux" class="anchor" href="#linux">
+  <svg class="octicon-link" aria-hidden="true">
+    <use href="#octicon-link"/>
+  </svg>
+</a>Linux</h5>
+<pre><code class="language-shell">make bin/triangle
+./bin/triangle</code></pre>
 <h2><a id="behind-the-name" class="anchor" href="#behind-the-name">
   <svg class="octicon-link" aria-hidden="true">
     <use href="#octicon-link"/>
