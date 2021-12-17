@@ -65,14 +65,12 @@ abstract class App < RenderLoop::Engine
     startup_time = Time.monotonic.total_milliseconds
     frame_time = Time::Span::ZERO
 
-    while @active
+    while @active && @main_window.should_close? == false
       desired_frame_time = 1.0_f64 / @desired_fps
 
       # How long the previous frame took
       elapsed_time = Time.measure do
         Glfw.poll_events
-        @active = false if @main_window.should_close?
-
         @windows.each { |window| window.update }
 
         tick = Tick.new(desired_frame_time, frame_time.total_seconds, startup_time)
@@ -100,6 +98,7 @@ abstract class App < RenderLoop::Engine
       end
     end
 
+    @active = false if @active
     self.shutdown
 
     Glfw.terminate
