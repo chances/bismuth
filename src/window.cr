@@ -6,6 +6,7 @@ require "wgpu"
 require "./input.cr"
 require "./platform.cr"
 
+# See: [WGPU::SwapChainDescriptor](https://chances.github.io/wgpu-crystal/WGPU/SwapChainDescriptor.html)
 class SwapChainDescriptor < WGPU::SwapChainDescriptor
   def self.from_window(window : Window, format : WGPU::TextureFormat, present_mode = WGPU::PresentMode::Fifo)
     raise ArgumentError.new "Window surface is not valid" unless window.surface.not_nil!.is_valid?
