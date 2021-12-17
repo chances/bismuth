@@ -1,7 +1,8 @@
-doc/
-lib/
-bin/
-.shards/
+/docs/
+/lib/
+/bin/
+/.shards/
+*.dwarf
 
 # Libraries ought not lock dependencies
 shard.lock
