@@ -31,6 +31,11 @@ clean:
 shard.lock: shard.yml
 	shards install
 
+############
+# EXAMPLES #
+############
+
+# Triangle
 bin/triangle: shard.lock ${SOURCES} examples/triangle.cr
 	@mkdir -p bin
 	crystal build examples/triangle.cr -o bin/triangle ${CFLAGS}
@@ -50,3 +55,8 @@ else
 	@echo "macOS app construction is unavailable on this platform"
 	@false
 endif
+
+# Cube with keyboard input
+bin/cube: shard.lock ${SOURCES} examples/cube.cr
+	@mkdir -p bin
+	crystal build examples/cube.cr -o bin/cube ${CFLAGS}

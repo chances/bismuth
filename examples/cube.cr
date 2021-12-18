@@ -1,25 +1,88 @@
+require "origin"
+
 require "../src/bismuth.cr"
 
 class Assets
   # FIXME: Switch to baked file system
   # extend BakedFileSystem
-  # bake_folder "./lib/wgpu/examples/assets/triangle"
-  private TRIANGLE_SHADER = `cat #{__DIR__}/../lib/wgpu/examples/assets/triangle/shader.wgsl`
+  # bake_folder "./assets"
+  private CUBE_SHADER = `cat #{__DIR__}/assets/cube.wgsl`
 
   def self.shader
-    TRIANGLE_SHADER
+    CUBE_SHADER
   end
 end
 
-class Triangle < App
-  @pipeline : WGPU::RenderPipeline?
-  @command_buffer : WGPU::CommandBuffer?
+struct PositionColor
+  @x = 0_f32
+  @y = 0_f32
+  @z = 0_f32
+  @r = 0_f32
+  @g = 0_f32
+  @b = 0_f32
+  @a = 1_f32
 
-  def initialize
-    super("Triangle")
+  def position
+    Origin::Vector3.new(@x, @y, @z)
   end
 
+  def color
+    Origin::Vector4.new(@r, @g, @b, @a)
+  end
+
+  def self.vertex_attributes
+    [
+      WGPU::VertexAttribute.new(
+        format: WGPU::VertexFormat::Float32x3,
+        offset: offsetof(PositionColor, @x),
+        shader_location: 0,
+      ),
+      WGPU::VertexAttribute.new(
+        format: WGPU::VertexFormat::Float32x4,
+        offset: offsetof(PositionColor, @r),
+        shader_location: 1,
+      ),
+    ]
+  end
+end
+
+class Cube < App
+  @pipeline : WGPU::RenderPipeline?
+  @command_buffer : WGPU::CommandBuffer?
+  @cube_vertices : WGPU::Buffer?
+  @cube_indices : WGPU::Buffer?
+
+  def initialize
+    super("Cube")
+  end
+
+  # TODO: Render a cube
+
   protected def startup
+    @cube_vertices = @device.create_buffer WGPU::BufferDescriptor.new(
+      usage : WGPU::BufferUsage::MapWrite | WGPU::BufferUsage::Vertex,
+      size: sizeof(PositionColor) * 8,
+      mapped_at_creation: true,
+    )
+    abort("Could not create vertex buffer", 1) unless @cube_vertices.not_nil!.is_valid?
+    @cube_vertices.not_nil!.map_write_async(0, @cube_vertices.not_nil!.size)
+
+    @cube_indices = @device.create_buffer WGPU::BufferDescriptor.new(
+      usage : WGPU::BufferUsage::MapWrite | WGPU::BufferUsage::Index,
+      size: 6 * 6 * sizeof(UInt16),
+      mapped_at_creation: true,
+    ).not_nil!
+    abort("Could not create index buffer", 1) unless @cube_indices.not_nil!.is_valid?
+    @cube_indices.not_nil!.map_write_async(0, @cube_indices.not_nil!.size)
+
+    vertex_attributes = PositionColor.vertex_attributes
+    vertex_layout = WGPU::VertexBufferLayout.new(
+      array_stride: UInt64.new(sizeof(PositionColor)),
+      step_mode: WGPU::InputStepMode::Vertex,
+      attribute_count: vertex_attributes.size,
+      attributes: vertex_attributes.to_unsafe,
+    )
+
     @shader = WGPU::ShaderModule.from_wgsl(@device, Assets.shader)
     abort("Could not compile shader", 1) if @shader.nil? || (@shader.not_nil!.is_valid? == false)
 
@@ -89,4 +152,4 @@ class Triangle < App
   end
 end
 
-Triangle.new.run
+Cube.new.run
