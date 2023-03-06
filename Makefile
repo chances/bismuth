@@ -39,11 +39,15 @@ shard.lock: shard.yml
 bin/triangle: shard.lock ${SOURCES} examples/triangle.cr
 	@mkdir -p bin
 	crystal build examples/triangle.cr -o bin/triangle ${CFLAGS}
+ifeq (${OS},Darwin)
+	@echo "Fixing up libwgpu_native dylib path…"
+	@install_name_tool -change /Users/runner/work/wgpu-native/wgpu-native/target/debug/deps/libwgpu_native.dylib @executable_path/../lib/wgpu/bin/libs/libwgpu_native.dylib bin/triangle
+endif
 
 bin/triangle.app: bin/triangle
 ifeq (${OS},Darwin)
 	@echo "Fixing up libwgpu_native dylib path…"
-	@install_name_tool -change /Users/runner/work/wgpu-native/wgpu-native/target/debug/deps/libwgpu_native.dylib @executable_path/../../Frameworks/libwgpu_native.dylib bin/triangle
+	@install_name_tool -change @executable_path/../lib/wgpu/bin/libs/libwgpu_native.dylib @executable_path/../../Frameworks/libwgpu_native.dylib bin/triangle
 	@otool -L bin/triangle | grep wgpu
 	@rm -rf "bin/triangle.app"
 	@lib/wgpu/scripts/appify.sh bin/triangle
@@ -60,3 +64,7 @@ endif
 bin/cube: shard.lock ${SOURCES} examples/cube.cr
 	@mkdir -p bin
 	crystal build examples/cube.cr -o bin/cube ${CFLAGS}
+ifeq (${OS},Darwin)
+	@echo "Fixing up libwgpu_native dylib path…"
+	@install_name_tool -change /Users/runner/work/wgpu-native/wgpu-native/target/debug/deps/libwgpu_native.dylib @executable_path/../lib/wgpu/bin/libs/libwgpu_native.dylib bin/cube
+endif
