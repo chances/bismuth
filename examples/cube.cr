@@ -1,6 +1,5 @@
-require "origin"
-
 require "../src/bismuth.cr"
+require "../src/math.cr"
 
 class Assets
   # FIXME: Switch to baked file system
@@ -23,11 +22,11 @@ struct PositionColor
   @a = 1_f32
 
   def position
-    Origin::Vector3.new(@x, @y, @z)
+    Vector3.new(@x, @y, @z)
   end
 
   def color
-    Origin::Vector4.new(@r, @g, @b, @a)
+    Vector4.new(@r, @g, @b, @a)
   end
 
   def self.vertex_attributes
@@ -59,6 +58,7 @@ class Cube < App
   # TODO: Render a cube
 
   protected def startup
+    # FIXME: This next line panics
     @cube_vertices = @device.create_buffer WGPU::BufferDescriptor.new(
       usage : WGPU::BufferUsage::MapWrite | WGPU::BufferUsage::Vertex,
       size: sizeof(PositionColor) * 8,
